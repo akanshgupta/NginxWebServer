@@ -1,0 +1,38 @@
+events {}
+
+http {
+include mime.types;
+server {
+listen 80;
+server_name 18.222.167.21;
+
+root /var/www/html;
+###############################################
+location /pet {
+return 307 /cat.html;
+}
+set $weekend 'NO';
+if ( $date_local ~ 'Saturday|Sunday|Wednesday' ) {
+set $weekend 'YES';
+}
+
+location /is_weekend {
+return 200 "$weekend";
+}
+###############################################
+rewrite ^/user/(\w+) /greet/$1 last;
+rewrite ^/greet/jack /cat.html;
+
+location /greet {
+return 200 "Hello User";
+}
+location = /greet/jack {
+return 200 "Hello Jack";
+}
+###############################################
+location /inspect {
+return 200 "$host\n$uri\n$arg_name";
+}
+###############################################
+}  
+}
