@@ -1,0 +1,38 @@
+user www-data;
+worker_processes auto;
+events {
+    worker_connections 1024;
+}
+
+http {
+
+    include mime.types;
+    
+    # Configure microcache (fastcgi)
+    fastcgi_cache_path /tmp/nginx_cache levels=1:2 keys_zone=Zone_1:100m inactive=60m;
+    fastcgi_cache_key "$scheme$request_method$host$request_uri";
+    
+    server {
+        listen 80;
+        server_name 13.59.79.13;
+
+        root /var/www/html;
+
+        index index.php index.html;
+
+        location / {
+            try_files $uri $uri/ =404;
+        }
+        
+        location ~\.php$ {
+            # Pass PHP requests to the php-fpm service (fastcgi)
+            include fastcgi.conf;
+            fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+
+            # Enable Cache 
+            fastcgi_cache Zone_1;
+            fastcgi_cache_valid 200 60m;
+            fastcgi_cache_valid 404 10m;
+        }
+    }  
+}
